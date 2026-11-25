@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>নিউরো-স্লিপ ও AI ওয়েক-আপ স্টুডিও</title>
+    <style>
+        :root {
+            --bg: #040711;
+            --card: #0c1324;
+            --indigo: #6366f1;
+            --cyan: #06b6d4;
+            --purple: #a855f7;
+            --emerald: #10b981;
+            --amber: #f59e0b;
+            --danger: #ef4444;
+            --text: #f1f5f9;
+            --muted: #94a3b8;
+            --border: #1e293b;
+        }
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body {
+            margin: 0; padding: 0; background: var(--bg); color: var(--text);
+            padding-bottom: 50px; min-height: 100vh;
+        }
+
+        header {
+            background: rgba(12, 19, 36, 0.94); backdrop-filter: blur(10px);
+            padding: 14px; text-align: center; border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 40;
+        }
+        header h1 { margin: 0; font-size: 1.08rem; color: var(--cyan); }
+        header p { margin: 3px 0 0; font-size: 0.72rem; color: var(--muted); }
+
+        .container { max-width: 540px; margin: 0 auto; padding: 12px; }
+
+        /* Navigation Tabs */
+        .nav-tabs {
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px;
+            margin-bottom: 12px; background: #080d1a; padding: 5px;
+            border-radius: 14px; border: 1px solid var(--border);
+        }
+        .tab-btn {
+            background: transparent; color: var(--muted); border: none;
+            padding: 9px 4px; border-radius: 10px; font-size: 0.73rem;
+            font-weight: bold; cursor: pointer; transition: 0.2s;
+        }
+        .tab-btn.active {
+            background: linear-gradient(135deg, var(--indigo), var(--cyan));
+            color: white; box-shadow: 0 3px 12px rgba(6, 182, 212, 0.3);
+        }
+
+        .card {
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 16px; padding: 15px; margin-bottom: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.45);
+        }
+        .card h3 { margin: 0 0 8px; font-size: 0.95rem; color: var(--cyan); }
+
+        label { display: block; font-size: 0.78rem; color: #cbd5e1; margin-bottom: 5px; font-weight: 600; }
+        input[type="text"], input[type="password"], input[type="time"], textarea, select {
+            width: 100%; background: #060a14; color: white; border: 1px solid #334155;
+            padding: 10px; border-radius: 10px; font-size: 0.88rem; outline: none; margin-bottom: 10px;
+        }
+        input[type="range"] { width: 100%; accent-color: var(--cyan); margin: 6px 0 12px; }
+
+        .btn {
+            width: 100%; padding: 12px; border: none; border-radius: 11px;
+            font-size: 0.9rem; font-weight: bold; cursor: pointer; transition: 0.2s;
+        }
+        .btn-primary { background: linear-gradient(135deg, var(--indigo), var(--cyan)); color: white; }
+        .btn-emerald { background: var(--emerald); color: #03150e; }
+        .btn-purple { background: var(--purple); color: white; }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-outline { background: transparent; border: 1px solid #334155; color: var(--muted); font-size: 0.8rem; padding: 8px; }
+
+        .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+        /* Breath Hypnosis Orb */
+        .breath-box {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: 20px 10px; background: #060a14; border-radius: 14px; border: 1px solid #1e293b;
+        }
+        .breath-orb {
+            width: 110px; height: 110px; border-radius: 50%;
+            background: radial-gradient(circle, rgba(6,182,212,0.85) 0%, rgba(99,102,241,0.25) 70%, transparent 100%);
+            box-shadow: 0 0 30px rgba(6,182,212,0.45);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.85rem; font-weight: bold; color: white; text-align: center;
+            transition: transform 4s ease-in-out, box-shadow 4s ease-in-out;
+        }
+        .breath-orb.inhale { transform: scale(1.48); box-shadow: 0 0 50px rgba(6,182,212,0.8); }
+        .breath-orb.hold { transform: scale(1.48); box-shadow: 0 0 55px rgba(168,85,247,0.85); }
+        .breath-orb.exhale { transform: scale(0.92); box-shadow: 0 0 18px rgba(99,102,241,0.3); }
+
+        /* Incoming Call Fullscreen Overlay */
+        #incomingCallOverlay {
+            display: none; position: fixed; inset: 0; z-index: 999;
+            background: radial-gradient(circle at top, #1e1b4b 0%, #030712 85%);
+            flex-direction: column; align-items: center; justify-content: space-between;
+            padding: 36px 20px; text-align: center;
+        }
+        .caller-avatar {
+            width: 115px; height: 115px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--cyan), var(--purple));
+            display: flex; align-items: center; justify-content: center;
+            font-size: 3.2rem; margin: 0 auto 14px;
+            animation: pulseCall 1.5s infinite;
+        }
+        @keyframes pulseCall {
+            0% { box-shadow: 0 0 0 0 rgba(6, 182, 212, 0.7); }
+            70% { box-shadow: 0 0 0 28px rgba(6, 182, 212, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(6, 182, 212, 0); }
+        }
+        .challenge-box {
+            background: rgba(15, 23, 42, 0.9); border: 1px solid var(--amber);
+            border-radius: 16px; padding: 16px; width: 100%; max-width: 400px;
+        }
+
+        .status-pill {
+            display: inline-block; padding: 4px 10px; border-radius: 20px;
+            font-size: 0.74rem; background: rgba(6,182,212,0.15); color: var(--cyan);
+            border: 1px solid rgba(6,182,212,0.35); margin-bottom: 8px;
+        }
+        .story-output {
+            background: #060a14; border: 1px solid #1e293b; border-radius: 12px;
+            padding: 12px; font-size: 0.85rem; line-height: 1.6; color: #e2e8f0;
+            margin-top: 10px; white-space: pre-wrap; max-height: 220px; overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>🌌 নিউরো-স্লিপ ও AI ওয়েক-আপ স্টুডিও</h1>
+    <p>ব্রেইন-ওয়েভ হিপনোসিস • লুসিড ড্রিম • স্মার্ট মর্নিং কল</p>
+</header>
+
+<div class="container">
+
+    <!-- Navigation -->
+    <div class="nav-tabs">
+        <button class="tab-btn active" id="navSleep" onclick="switchTab('sleep')">🎧 ঘুম ও সুর</button>
+        <button class="tab-btn" id="navBreath" onclick="switchTab('breath')">🫁 হিপনোসিস</button>
+        <button class="tab-btn" id="navLucid" onclick="switchTab('lucid')">🌙 গল্প ও স্বপ্ন</button>
+        <button class="tab-btn" id="navAlarm" onclick="switchTab('alarm')">⏰ মর্নিং কল</button>
+    </div>
+
+    <!-- TAB 1: BRAIN-WAVE SLEEP HACKER & AMBIENT MIXER -->
+    <div id="tabSleep" class="card">
+        <h3>🧠 ডেল্টা ব্রেইন-ওয়েভ ও প্রকৃতির আবহ</h3>
+        <p style="font-size:0.76rem; color:var(--muted); margin:0 0 12px;">
+            হেডফোন লাগিয়ে শুনলে ডেল্টা ও থিটা তরঙ্গ মস্তিষ্ককে গভীর ঘুমে নিয়ে যায় এবং সময় শেষে অটো বন্ধ হয়ে যায়।
+        </p>
+
+        <label>ব্রেইন-ওয়েভ ফ্রিকোয়েন্সি মোড:</label>
+        <select id="waveMode">
+            <option value="delta">🌌 গভীর ঘুম (Delta Wave - 2.5 Hz)</option>
+            <option value="theta">🦋 লুসিড ড্রিম ও কল্পনা (Theta Wave - 6.0 Hz)</option>
+            <option value="alpha">🍃 মানসিক প্রশান্তি (Alpha Wave - 10.0 Hz)</option>
+        </select>
+
+        <label>ব্রেইন-ওয়েভ ভলিউম: <span id="valBrain">45%</span></label>
+        <input type="range" id="volBrain" min="0" max="100" value="45" oninput="updateAudioVolumes()">
+
+        <label>🌧️ রাতের বৃষ্টির শব্দ (Pink Noise Rain): <span id="valRain">50%</span></label>
+        <input type="range" id="volRain" min="0" max="100" value="50" oninput="updateAudioVolumes()">
+
+        <label>🦗 ঝিঁঝিঁ পোকার ডাক (Night Crickets): <span id="valCricket">30%</span></label>
+        <input type="range" id="volCricket" min="0" max="100" value="30" oninput="updateAudioVolumes()">
+
+        <label>⏳ অটো স্লিপ টাইমার (ঘুমিয়ে পড়লে একা বন্ধ হবে):</label>
+        <select id="sleepTimerSelect">
+            <option value="15">১৫ মিনিট পর বন্ধ হবে</option>
+            <option value="30" selected>৩০ মিনিট পর বন্ধ হবে</option>
+            <option value="45">৪৫ মিনিট পর বন্ধ হবে</option>
+            <option value="60">৬০ মিনিট পর বন্ধ হবে</option>
+        </select>
+
+        <div class="row-2">
+            <button class="btn btn-primary" id="btnStartSleepAudio" onclick="toggleSleepAudio()">▶️ স্লিপ সাউন্ড চালু করুন</button>
+            <button class="btn btn-outline" onclick="stopAllAudio()">⏹️ সব শব্দ বন্ধ</button>
+        </div>
+        <div id="sleepAudioStatus" style="text-align:center; font-size:0.78rem; color:var(--cyan); margin-top:8px;"></div>
+    </div>
+
+    <!-- TAB 2: BREATH-SYNC HYPNOSIS -->
+    <div id="tabBreath" class="card" style="display:none;">
+        <h3>🫁 ৪-৭-৮ শ্বাস-প্রশ্বাস স্লিপ হিপনোসিস</h3>
+        <p style="font-size:0.76rem; color:var(--muted); margin:0 0 12px;">
+            আলোর গোলকটির সাথে তাল মিলিয়ে নিঃশ্বাস নিন। এটি হৃদস্পন্দন ধীর করে মাত্র কয়েক মিনিটে ঘুম এনে দেয়।
+        </p>
+
+        <div class="breath-box">
+            <div class="breath-orb" id="breathOrb">প্রস্তুত হন</div>
+            <div id="breathInstruction" style="margin-top:26px; font-size:0.9rem; font-weight:bold; color:var(--cyan);">
+                শুরু করতে নিচের বাটনে চাপ দিন
+            </div>
+            <div id="breathCycleCount" style="font-size:0.75rem; color:var(--muted); margin-top:4px;">সম্পন্ন চক্র: ০</div>
+        </div>
+
+        <div style="margin-top:12px;">
+            <button class="btn btn-emerald" id="btnBreathToggle" onclick="toggleBreathHypnosis()">🧘 হিপনোসিস শুরু করুন</button>
+        </div>
+    </div>
+
+    <!-- TAB 3: AI BEDTIME LULLABY, LUCID WHISPER & DREAM DECODER -->
+    <div id="tabLucid" style="display:none;">
+        <div class="card">
+            <h3>📖 AI ঘুমপাড়ানি গল্প ও লুসিড ড্রিম হুইস্পার</h3>
+            <label>আপনার নাম ও আজকের অনুভূতি / স্বপ্নের বিষয়:</label>
+            <input type="text" id="dreamThemeInput" placeholder="যেমন: আলমগীর, জ্যোৎস্না রাতে নদীর ধারে নৌকা ভ্রমণ...">
+
+            <div class="row-2">
+                <button class="btn btn-purple" onclick="generateAndReadLullaby()">🎙️ গল্প তৈরি ও পাঠ</button>
+                <button class="btn btn-outline" onclick="scheduleLucidWhisper()">🌙 ২ ঘণ্টা পর স্বপ্নে ফিসফিস</button>
+            </div>
+            <div id="lucidStatus" style="font-size:0.76rem; color:var(--amber); margin-top:6px;"></div>
+            <div class="story-output" id="lullabyOutput" style="display:none;"></div>
+        </div>
+
+        <div class="card">
+            <h3>🔮 সকালের স্বপ্ন ডিকোডার (Dream Decoder)</h3>
+            <label>ঘুম ভাঙার পর দেখা স্বপ্নটি লিখুন বা ভয়েস টাইপ করুন:</label>
+            <textarea id="morningDreamText" rows="2" placeholder="স্বপ্নে কী দেখলেন লিখুন..."></textarea>
+            <button class="btn btn-primary" onclick="decodeMorningDream()">✨ স্বপ্নের অর্থ বিশ্লেষণ করুন</button>
+            <div class="story-output" id="dreamDecodeOutput" style="display:none;"></div>
+        </div>
+    </div>
+
+    <!-- TAB 4: SMART ALARM & AI MORNING BRIEFING CALL -->
+    <div id="tabAlarm" class="card" style="display:none;">
+        <h3>📞 AI মর্নিং ব্রিফিং ইনকামিং কল অ্যালার্ম</h3>
+        <p style="font-size:0.76rem; color:var(--muted); margin:0 0 10px;">
+            সকালে অ্যালার্মের বদলে আপনার ফোনে AI অ্যাসিস্ট্যান্টের কল আসবে। রিসিভ করতে ছোট একটি চ্যালেঞ্জ সমাধান করতে হবে, এরপর সে আপনাকে আজকের তারিখ ও কাজের তালিকা শোনাবে!
+        </p>
+
+        <div class="row-2">
+            <div>
+                <label>ঘুম ভাঙার সময়:</label>
+                <input type="time" id="alarmTimeInput" value="06:00">
+            </div>
+            <div>
+                <label>স্মার্ট স্লিপ সেন্সর:</label>
+                <select id="smartMotionWindow">
+                    <option value="15" selected>১৫ মিনিট আগে হালকা ঘুমে জাগাবে</option>
+                    <option value="0">ঠিক নির্ধারিত সময়ে জাগাবে</option>
+                </select>
+            </div>
+        </div>
+
+        <label>সকালে কল রিসিভ করলে AI যা মনে করিয়ে দেবে:</label>
+        <input type="text" id="morningTasksInput" placeholder="যেমন: ফজরের নামাজ, সংবাদ স্ক্রিপ্ট তৈরি, সকালের নাস্তা">
+
+        <label>ঐচ্ছিক Gemini API Key (আরও স্মার্ট AI গল্প ও ব্রিফিংয়ের জন্য):</label>
+        <input type="password" id="geminiKeyInput" placeholder="AIzaSy... (খালি রাখলেও অফলাইনে দারুণ চলবে)">
+
+        <div class="row-2">
+            <button class="btn btn-emerald" id="btnSetAlarm" onclick="toggleSmartAlarm()">⏰ স্মার্ট কল অ্যালার্ম চালু</button>
+            <button class="btn btn-outline" onclick="triggerIncomingCall()">📲 এখনই কল টেস্ট করুন</button>
+        </div>
+        <div id="alarmStatusBox" style="text-align:center; font-size:0.8rem; color:var(--emerald); margin-top:10px; font-weight:bold;"></div>
+    </div>
+
+</div>
+
+<!-- FULLSCREEN INCOMING CALL OVERLAY -->
+<div id="incomingCallOverlay">
+    <div>
+        <div class="status-pill">📞 AI মর্নিং ব্রিফিং কল...</div>
+        <div class="caller-avatar">🤖</div>
+        <h2 style="margin:0; font-size:1.45rem; color:white;">শুভ সকাল! জেগে উঠুন</h2>
+        <p style="margin:6px 0 0; font-size:0.85rem; color:var(--cyan);" id="callSubStatus">কল রিসিভ করতে নিচের চ্যালেঞ্জটি সমাধান করুন</p>
+    </div>
+
+    <!-- No-Snooze Wake-Up Challenge -->
+    <div class="challenge-box" id="wakeChallengeBox">
+        <div style="font-size:0.8rem; color:var(--amber); font-weight:bold; margin-bottom:6px;">
+            🧠 ঘুম তাড়ানোর চ্যালেঞ্জ (সঠিক উত্তর দিলে কল রিসিভ হবে):
+        </div>
+        <div id="mathQuestion" style="font-size:1.3rem; font-weight:bold; color:white; margin:8px 0;">১৭ + ২৪ = ?</div>
+        <input type="text" id="mathAnswerInput" inputmode="numeric" placeholder="উত্তর লিখুন..." style="text-align:center; font-size:1.1rem;">
+        <button class="btn btn-emerald" onclick="verifyWakeChallenge()">📞 উত্তর দিয়ে কল রিসিভ করুন</button>
+    </div>
+
+    <!-- Active Briefing View after Answering -->
+    <div class="challenge-box" id="activeBriefingBox" style="display:none; border-color:var(--emerald);">
+        <div style="color:var(--emerald); font-weight:bold; font-size:0.92rem; margin-bottom:8px;">🔊 AI মর্নিং ব্রিফিং চলছে...</div>
+        <div id="briefingTranscript" style="font-size:0.84rem; color:#e2e8f0; line-height:1.5; text-align:left;"></div>
+        <button class="btn btn-danger" style="margin-top:12px;" onclick="endMorningCall()">📵 কল কাটুন (আমি জেগে গেছি)</button>
+    </div>
+
+    <div style="font-size:0.74rem; color:var(--muted);">নিউরো-স্লিপ স্মার্ট ওয়েক-আপ সিস্টেম</div>
+</div>
+
+<script>
+    // Global State
+    let audioCtx = null;
+    let isSleepAudioPlaying = false;
+    let brainGain = null, rainGain = null, cricketGain = null;
+    let oscLeft = null, oscRight = null, cricketInterval = null, sleepTimerTimeout = null;
+
+    let breathInterval = null;
+    let isBreathing = false;
+    let breathCycles = 0;
+
+    let alarmActive = false;
+    let alarmCheckInterval = null;
+    let ringtoneInterval = null;
+    let currentMathAnswer = 0;
+    let motionDetectedRecently = false;
+
+    window.onload = () => {
+        const savedKey = localStorage.getItem('neuro_sleep_gemini_key');
+        if (savedKey) document.getElementById('geminiKeyInput').value = savedKey;
+        const savedTasks = localStorage.getItem('neuro_sleep_tasks');
+        if (savedTasks) document.getElementById('morningTasksInput').value = savedTasks;
+    };
+
+    function switchTab(tab) {
+        const map = { sleep: 'tabSleep', breath: 'tabBreath', lucid: 'tabLucid', alarm: 'tabAlarm' };
+        const navMap = { sleep: 'navSleep', breath: 'navBreath', lucid: 'navLucid', alarm: 'navAlarm' };
+        Object.keys(map).forEach(k => {
+            document.getElementById(map[k]).style.display = (k === tab) ? 'block' : 'none';
+            document.getElementById(navMap[k]).classList.toggle('active', k === tab);
+        });
+    }
+
+    // ==========================================
+    // 1. WEB AUDIO BRAIN-WAVE & NATURE ENGINE
+    // ==========================================
+    function toggleSleepAudio() {
+        if (isSleepAudioPlaying) {
+            stopAllAudio();
+            return;
+        }
+
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const mode = document.getElementById('waveMode').value;
+        const beatFreq = mode === 'delta' ? 2.5 : (mode === 'theta' ? 6.0 : 10.0);
+        const baseFreq = 136.1; // Soothing Om Carrier Frequency
+
+        // Binaural Stereo Oscillators
+        const merger = audioCtx.createChannelMerger(2);
+        oscLeft = audioCtx.createOscillator();
+        oscRight = audioCtx.createOscillator();
+        oscLeft.type = 'sine';
+        oscRight.type = 'sine';
+        oscLeft.frequency.value = baseFreq;
+        oscRight.frequency.value = baseFreq + beatFreq;
+
+        brainGain = audioCtx.createGain();
+        oscLeft.connect(merger, 0, 0);
+        oscRight.connect(merger, 0, 1);
+        merger.connect(brainGain);
+        brainGain.connect(audioCtx.destination);
+        oscLeft.start();
+        oscRight.start();
+
+        // Procedural Pink Noise (Soft Night Rain)
+        const bufferSize = 2 * audioCtx.sampleRate;
+        const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+        const output = noiseBuffer.getChannelData(0);
+        let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
+        for (let i = 0; i < bufferSize; i++) {
+            const white = Math.random() * 2 - 1;
+            b0 = 0.99886 * b0 + white * 0.0555179;
+            b1 = 0.99332 * b1 + white * 0.0750759;
+            b2 = 0.96900 * b2 + white * 0.1538520;
+            b3 = 0.86650 * b3 + white * 0.3104856;
+            b4 = 0.55000 * b4 + white * 0.5329522;
+            b5 = -0.7616 * b5 - white * 0.0168980;
+            output[i] = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362) * 0.04;
+            b6 = white * 0.115926;
+        }
+        const rainSource = audioCtx.createBufferSource();
+        rainSource.buffer = noiseBuffer;
+        rainSource.loop = true;
+
+        const rainFilter = audioCtx.createBiquadFilter();
+        rainFilter.type = 'lowpass';
+        rainFilter.frequency.value = 650;
+
+        rainGain = audioCtx.createGain();
+        rainSource.connect(rainFilter);
+        rainFilter.connect(rainGain);
+        rainGain.connect(audioCtx.destination);
+        rainSource.start();
+
+        // Procedural Night Crickets (ঝিঁঝিঁ পোকার ডাক)
+        cricketGain = audioCtx.createGain();
+        cricketGain.connect(audioCtx.destination);
+        cricketInterval = setInterval(() => {
+            if (!audioCtx || !isSleepAudioPlaying) return;
+            const now = audioCtx.currentTime;
+            const osc = audioCtx.createOscillator();
+            const chirpGain = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(4200, now);
+            chirpGain.gain.setValueAtTime(0.0001, now);
+            chirpGain.gain.exponentialRampToValueAtTime(0.018, now + 0.04);
+            chirpGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.14);
+            osc.connect(chirpGain);
+            chirpGain.connect(cricketGain);
+            osc.start(now);
+            osc.stop(now + 0.15);
+        }, 1600);
+
+        isSleepAudioPlaying = true;
+        updateAudioVolumes();
+
+        const mins = parseInt(document.getElementById('sleepTimerSelect').value);
+        document.getElementById('btnStartSleepAudio').innerText = '⏸️ স্লিপ সাউন্ড চলছে (বন্ধ করুন)';
+        document.getElementById('sleepAudioStatus').innerText = `✨ চলছে... ${mins} মিনিট পর স্বয়ংক্রিয়ভাবে বন্ধ হয়ে যাবে।`;
+
+        clearTimeout(sleepTimerTimeout);
+        sleepTimerTimeout = setTimeout(() => {
+            stopAllAudio();
+        }, mins * 60 * 1000);
+    }
+
+    function updateAudioVolumes() {
+        const b = document.getElementById('volBrain').value;
+        const r = document.getElementById('volRain').value;
+        const c = document.getElementById('volCricket').value;
+        document.getElementById('valBrain').innerText = b + '%';
+        document.getElementById('valRain').innerText = r + '%';
+        document.getElementById('valCricket').innerText = c + '%';
+
+        if (brainGain) brainGain.gain.value = (b / 100) * 0.18;
+        if (rainGain) rainGain.gain.value = (r / 100) * 0.85;
+        if (cricketGain) cricketGain.gain.value = (c / 100);
+    }
+
+    function stopAllAudio() {
+        isSleepAudioPlaying = false;
+        clearInterval(cricketInterval);
+        clearTimeout(sleepTimerTimeout);
+        if (audioCtx) {
+            audioCtx.close().catch(() => {});
+            audioCtx = null;
+        }
+        document.getElementById('btnStartSleepAudio').innerText = '▶️ স্লিপ সাউন্ড চালু করুন';
+        document.getElementById('sleepAudioStatus').innerText = '';
+    }
+
+    // ==========================================
+    // 2. 4-7-8 BREATH-SYNC HYPNOSIS ENGINE
+    // ==========================================
+    function playSoftChime(freq) {
+        try {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = ctx.createOscillator();
+            const g = ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.value = freq;
+            g.gain.setValueAtTime(0.08, ctx.currentTime);
+            g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 1.2);
+            osc.connect(g);
+            g.connect(ctx.destination);
+            osc.start();
+            osc.stop(ctx.currentTime + 1.25);
+        } catch (e) {}
+    }
+
+    function toggleBreathHypnosis() {
+        const orb = document.getElementById('breathOrb');
+        const inst = document.getElementById('breathInstruction');
+        const btn = document.getElementById('btnBreathToggle');
+
+        if (isBreathing) {
+            isBreathing = false;
+            clearTimeout(breathInterval);
+            orb.className = 'breath-orb';
+            orb.innerText = 'বিরতি';
+            inst.innerText = 'হিপনোসিস বন্ধ করা হয়েছে';
+            btn.innerText = '🧘 আবার শুরু করুন';
+            return;
+        }
+
+        isBreathing = true;
+        breathCycles = 0;
+        btn.innerText = '⏹️ হিপনোসিস বন্ধ করুন';
+
+        const runBreathCycle = () => {
+            if (!isBreathing) return;
+
+            // Step 1: Inhale (4 sec)
+            orb.className = 'breath-orb inhale';
+            orb.innerText = 'নিঃশ্বাস নিন';
+            inst.innerText = 'নাক দিয়ে ধীরে ধীরে গভীর নিঃশ্বাস নিন (৪ সেকেন্ড)...';
+            playSoftChime(261.6);
+
+            breathInterval = setTimeout(() => {
+                if (!isBreathing) return;
+                // Step 2: Hold (7 sec)
+                orb.className = 'breath-orb hold';
+                orb.innerText = 'ধরে রাখুন';
+                inst.innerText = 'নিঃশ্বাস ভেতরে শান্তভাবে ধরে রাখুন (৭ সেকেন্ড)...';
+                playSoftChime(329.6);
+
+                breathInterval = setTimeout(() => {
+                    if (!isBreathing) return;
+                    // Step 3: Exhale (8 sec)
+                    orb.className = 'breath-orb exhale';
+                    orb.innerText = 'ছেড়ে দিন';
+                    inst.innerText = 'মুখ দিয়ে সব ক্লান্তি ও নিঃশ্বাস ধীরে ছেড়ে দিন (৮ সেকেন্ড)...';
+                    playSoftChime(196.0);
+
+                    breathInterval = setTimeout(() => {
+                        if (!isBreathing) return;
+                        breathCycles++;
+                        document.getElementById('breathCycleCount').innerText = `সম্পন্ন চক্র: ${breathCycles}`;
+                        runBreathCycle();
+                    }, 8000);
+                }, 7000);
+            }, 4000);
+        };
+
+        runBreathCycle();
+    }
+
+    // ==========================================
+    // 3. AI LULLABY, LUCID WHISPER & DREAM DECODER
+    // ==========================================
+    function speakBanglaText(text, rate = 0.85, pitch = 0.95) {
+        if (!('speechSynthesis' in window)) return;
+        window.speechSynthesis.cancel();
+        const utter = new SpeechSynthesisUtterance(text);
+        utter.lang = 'bn-BD';
+        utter.rate = rate;
+        utter.pitch = pitch;
+        window.speechSynthesis.speak(utter);
+    }
+
+    async function callGeminiOptional(promptText, fallbackText) {
+        const key = document.getElementById('geminiKeyInput').value.trim();
+        if (!key) return fallbackText;
+        localStorage.setItem('neuro_sleep_gemini_key', key);
+
+        try {
+            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(key)}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ contents: [{ parts: [{ text: promptText }] }] })
+            });
+            const data = await res.json();
+            return data?.candidates?.[0]?.content?.parts?.[0]?.text || fallbackText;
+        } catch (e) {
+            return fallbackText;
+        }
+    }
+
+    async function generateAndReadLullaby() {
+        const theme = document.getElementById('dreamThemeInput').value.trim() || 'শান্ত রাতের আকাশ ও জ্যোৎস্না';
+        const out = document.getElementById('lullabyOutput');
+        out.style.display = 'block';
+        out.innerText = '✨ আপনার জন্য শান্ত ঘুমপাড়ানি গল্প তৈরি হচ্ছে...';
+
+        const fallbackStory = `রাত এখন অনেক গভীর। চারদিকে নিস্তব্ধ প্রকৃতি, আকাশে রুপোলি জ্যোৎস্না ছড়িয়ে আছে। ${theme}-এর মতো এক শান্ত ও নিরাপদ জগতে আপনি ধীরে ধীরে হারিয়ে যাচ্ছেন। সারাদিনের সব ক্লান্তি, চিন্তা ও ব্যস্ততা বাতাসের সাথে মিলিয়ে যাচ্ছে। আপনার চোখের পাতা ভারী হয়ে আসছে... এক গভীর, প্রশান্তিময় ঘুম আপনাকে আলিঙ্গন করছে। শুভ রাত্রি।`;
+
+        const prompt = `তুমি একজন মমতাময়ী স্লিপ থেরাপিস্ট। এই বিষয়টি নিয়ে: "${theme}" — মাত্র ১২০ শব্দের মধ্যে অত্যন্ত শান্ত, আবেগঘন ও ঘুমপাড়ানি বাংলা গল্প লেখো, যা শুনলে মানুষের চোখ জুড়িয়ে ঘুম চলে আসে।`;
+        const story = await callGeminiOptional(prompt, fallbackStory);
+
+        out.innerText = story;
+        speakBanglaText(story, 0.80, 0.92);
+    }
+
+    function scheduleLucidWhisper() {
+        const theme = document.getElementById('dreamThemeInput').value.trim() || 'একটি সুন্দর স্বপ্ন';
+        document.getElementById('lucidStatus').innerText = `🌙 সেট করা হয়েছে! ২ ঘণ্টা পর গভীর ঘুমে মৃদু কণ্ঠে ফিসফিস করে শোনানো হবে: "${theme}"`;
+        setTimeout(() => {
+            speakBanglaText(`তুমি এখন স্বপ্ন দেখছো... চারপাশে শুধু ${theme}... তুমি এই স্বপ্নের নিয়ন্ত্রণে আছো...`, 0.72, 0.85);
+        }, 2 * 60 * 60 * 1000);
+    }
+
+    async function decodeMorningDream() {
+        const dream = document.getElementById('morningDreamText').value.trim();
+        if (!dream) { alert('আগে স্বপ্নের বিবরণ লিখুন!'); return; }
+
+        const out = document.getElementById('dreamDecodeOutput');
+        out.style.display = 'block';
+        out.innerText = '🔮 আপনার অবচেতন মনের সংকেত বিশ্লেষণ করা হচ্ছে...';
+
+        const fallbackDecode = `আপনার স্বপ্ন "${dream}" নির্দেশ করে যে আপনার অবচেতন মন নতুন কোনো পরিবর্তন বা সৃজনশীল সাফল্যের জন্য প্রস্তুত হচ্ছে। ভেতরের ভয় কাটিয়ে সামনে এগিয়ে যাওয়ার ইতিবাচক ইঙ্গিত এটি।`;
+        const prompt = `এই স্বপ্নটির মনস্তাত্ত্বিক ও প্রতীকী অর্থ সহজ, ইতিবাচক ও আকর্ষণীয় বাংলায় ১০০ শব্দের মধ্যে ব্যাখ্যা করো: "${dream}"`;
+        const result = await callGeminiOptional(prompt, fallbackDecode);
+        out.innerText = result;
+    }
+
+    // ==========================================
+    // 4. SMART WAKE-UP & INCOMING CALL ALARM
+    // ==========================================
+    // Listen to phone accelerometer for light-sleep detection
+    if (window.DeviceMotionEvent) {
+        window.addEventListener('devicemotion', (e) => {
+            const acc = e.accelerationIncludingGravity;
+            if (!acc) return;
+            const total = Math.abs(acc.x || 0) + Math.abs(acc.y || 0) + Math.abs(acc.z || 0);
+            if (total > 13.5) {
+                motionDetectedRecently = true;
+                setTimeout(() => { motionDetectedRecently = false; }, 60000);
+            }
+        });
+    }
+
+    function toggleSmartAlarm() {
+        const btn = document.getElementById('btnSetAlarm');
+        const status = document.getElementById('alarmStatusBox');
+
+        if (alarmActive) {
+            alarmActive = false;
+            clearInterval(alarmCheckInterval);
+            btn.innerText = '⏰ স্মার্ট কল অ্যালার্ম চালু';
+            btn.className = 'btn btn-emerald';
+            status.innerText = 'অ্যালার্ম বন্ধ করা হয়েছে।';
+            return;
+        }
+
+        const timeVal = document.getElementById('alarmTimeInput').value;
+        if (!timeVal) { alert('সময় সিলেক্ট করুন!'); return; }
+
+        localStorage.setItem('neuro_sleep_tasks', document.getElementById('morningTasksInput').value);
+        alarmActive = true;
+        btn.innerText = '🔕 অ্যালার্ম চালু আছে (বন্ধ করুন)';
+        btn.className = 'btn btn-danger';
+        status.innerText = `✅ সকাল ${timeVal}-এ AI মর্নিং কল সেট করা হয়েছে! (ফোনের স্ক্রিন অন রাখুন)`;
+
+        alarmCheckInterval = setInterval(() => {
+            if (!alarmActive) return;
+            const now = new Date();
+            const [targetH, targetM] = timeVal.split(':').map(Number);
+            const targetDate = new Date();
+            targetDate.setHours(targetH, targetM, 0, 0);
+
+            const diffMins = (targetDate - now) / 60000;
+            const smartWin = parseInt(document.getElementById('smartMotionWindow').value);
+
+            // Trigger at exact time OR within smart window when body moves in light sleep
+            if ((diffMins <= 0 && diffMins > -1) || (smartWin > 0 && diffMins > 0 && diffMins <= smartWin && motionDetectedRecently)) {
+                alarmActive = false;
+                clearInterval(alarmCheckInterval);
+                triggerIncomingCall();
+            }
+        }, 3000);
+    }
+
+    function triggerIncomingCall() {
+        stopAllAudio();
+        const a = Math.floor(Math.random() * 25) + 12;
+        const b = Math.floor(Math.random() * 25) + 11;
+        currentMathAnswer = a + b;
+
+        document.getElementById('mathQuestion').innerText = `${a} + ${b} = ?`;
+        document.getElementById('mathAnswerInput').value = '';
+        document.getElementById('wakeChallengeBox').style.display = 'block';
+        document.getElementById('activeBriefingBox').style.display = 'none';
+        document.getElementById('incomingCallOverlay').style.display = 'flex';
+
+        // Gentle Rising Morning Birdsong / Chime Ringtone
+        ringtoneInterval = setInterval(() => {
+            playSoftChime(523.25);
+            setTimeout(() => playSoftChime(659.25), 250);
+            setTimeout(() => playSoftChime(783.99), 500);
+        }, 2000);
+    }
+
+    async function verifyWakeChallenge() {
+        const userAns = parseInt(document.getElementById('mathAnswerInput').value.trim());
+        if (userAns !== currentMathAnswer) {
+            alert('❌ ভুল উত্তর! চোখ খুলে সঠিক যোগফল লিখুন।');
+            return;
+        }
+
+        clearInterval(ringtoneInterval);
+        document.getElementById('wakeChallengeBox').style.display = 'none';
+        document.getElementById('activeBriefingBox').style.display = 'block';
+        document.getElementById('callSubStatus').innerText = 'কল সংযুক্ত হয়েছে • AI কথা বলছে...';
+
+        const now = new Date();
+        const dateStr = now.toLocaleDateString('bn-BD', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        const timeStr = now.toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-digit' });
+        const tasks = document.getElementById('morningTasksInput').value.trim() || 'আজকের গুরুত্বপূর্ণ কাজগুলো সময়মতো শেষ করা';
+
+        const fallbackBriefing = `শুভ সকাল! এখন সময় ${timeStr}, আজ ${dateStr}। বিছানা ছেড়ে উঠে পড়ুন, নতুন একটি সুন্দর দিন আপনার অপেক্ষায়। আজকের জন্য আপনার নির্ধারিত কাজগুলো হলো: ${tasks}। আপনার দিনটি অত্যন্ত সফল ও আনন্দময় হোক!`;
+
+        const prompt = `তুমি একজন প্রাণবন্ত AI মর্নিং অ্যাসিস্ট্যান্ট। এখন সকাল ${timeStr}, তারিখ ${dateStr}। ব্যবহারকারীর আজকের কাজ: "${tasks}"। তাকে ঘুম থেকে জাগিয়ে উৎসাহ দিয়ে ৮০ শব্দের মধ্যে একটি চমৎকার বাংলা মর্নিং ব্রিফিং দাও।`;
+
+        const briefing = await callGeminiOptional(prompt, fallbackBriefing);
+        document.getElementById('briefingTranscript').innerText = briefing;
+        speakBanglaText(briefing, 0.95, 1.05);
+    }
+
+    function endMorningCall() {
+        clearInterval(ringtoneInterval);
+        window.speechSynthesis.cancel();
+        document.getElementById('incomingCallOverlay').style.display = 'none';
+        document.getElementById('btnSetAlarm').innerText = '⏰ স্মার্ট কল অ্যালার্ম চালু';
+        document.getElementById('btnSetAlarm').className = 'btn btn-emerald';
+        document.getElementById('alarmStatusBox').innerText = '☀️ শুভ সকাল! মর্নিং ব্রিফিং সম্পন্ন হয়েছে।';
+    }
+</script>
+</body>
+</html>
